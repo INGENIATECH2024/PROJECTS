@@ -1,0 +1,1365 @@
+#------------------------------------------------------- IMPORT LIBRARIES ------------------------------------------------------------------------
+import pandas as pd
+import matplotlib as mp 
+import numpy as np
+import tkinter as tk
+from tkinter import ttk, messagebox
+from PIL import Image, ImageTk
+from datetime import datetime
+from openpyxl import load_workbook
+
+
+root_tk = tk.Tk()
+root_tk .withdraw()
+
+def update_time(time_label, date_label):
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    current_date = now.strftime("%Y-%m-%d")
+    time_label.config(text=current_time)
+    date_label.config(text=current_date)
+    time_label.after(1000, update_time, time_label, date_label)
+#--------------------------------------------------------------- LOGIN -------------------------------------------------------------------------------
+def handle_login():
+    username = username_entry.get()
+    password = password_entry.get()
+
+    # Check if the username and password are correct
+    if username == "yad" and password == "1234":  # Replace with your actual credentials
+        login.destroy()  # Close the login window
+        mainwindow()  # Open the main window
+    else:
+        messagebox.showerror("Error", "Usuario o contraseña incorrectos.")
+
+# ---------------------------------------------------------- MAIN MENU ------------------------------------------------------------------------------
+def root():
+    # Initialize main window
+    root = tk.Toplevel()
+    root.title("TRUCK SHOPS")
+    root.geometry("1500x750")
+
+    # Load the background image
+    image_path = "bg1.jpg"  # Ensure this path is correct
+    background = Image.open(image_path)
+
+    # Resize the image to fit the window size
+    background = background.resize((1500, 750), Image.LANCZOS)  # Adjust the size to match your window
+    bgimg = ImageTk.PhotoImage(background)
+
+    # Create a canvas to display the background image
+    canvas = tk.Canvas(root, highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+
+    # Add the image as a background
+    canvas.create_image(0, 0, image=bgimg, anchor="nw")
+
+    # Create frames and widgets on the canvas
+    frame = tk.Frame(canvas, bg="#C0C0C0", bd=2, relief="ridge")
+    frame.place(relx=0.1, rely=0.6, anchor="w", width=300, height=550)
+
+    frame2 = tk.Frame(canvas, bg="#C0C0C0", bd=2, relief="ridge")
+    frame2.place(relx=0.5, rely=0.54, anchor="center", width=300, height=450) #54
+
+    frame3 = tk.Frame(canvas, bg="#C0C0C0", bd=2, relief="ridge")
+    frame3.place(relx=0.9, rely=0.54, anchor="e", width=300, height=450)
+
+    title_label = tk.Label(canvas, text="REGISTROS", bg="#C0C0C0", font=("Oswald", 15, "bold"), relief="ridge")
+    title_label.place(relx=0.1, rely=0.20, anchor="w", width=300)
+
+    title_label1 = tk.Label(canvas, text="VISUALIZACIÓN", bg="#C0C0C0", font=("Oswald", 15, "bold"), relief="ridge")
+    title_label1.place(relx=0.5, rely=0.20, anchor="center", width=300)
+
+    title_label2 = tk.Label(canvas, text="REPORTES", bg="#C0C0C0", font=("Oswald", 15, "bold"), relief="ridge")
+    title_label2.place(relx=0.9, rely=0.20, anchor="e", width=300)
+
+    title_label3 = tk.Label(canvas, text="MENU", bg="#C0C0C0", font=("Oswald", 30, "bold"), relief="raised")
+    title_label3.place(relx=0.5, rely=0.10, anchor="c", width=300)
+
+    framehome = tk.Frame(canvas, bg="#C0C0C0", bd=2, relief="ridge")
+    framehome.place(relx=0.05, rely=0.10, anchor="w", width=70, height=70)
+
+    framecalendar = tk.Frame(canvas, bg="#C0C0C0", bd=2, relief="ridge")
+    framecalendar.place(relx=0.85, rely=0.9, anchor="w", width=70, height=70)
+
+    # Load the home button image
+    home_image_path = "home.jpg"  # Ensure this path is correct
+    home_image = Image.open(home_image_path)
+    home_image = home_image.resize((30, 20), Image.LANCZOS)  # Resize the image as needed
+    home_imgtk = ImageTk.PhotoImage(home_image)
+
+    calendar_image_path = "calendar.png"  # Ensure this path is correct
+    calendar_image = Image.open(calendar_image_path)
+    calendar_image = calendar_image.resize((30, 30), Image.LANCZOS)  # Resize the image as needed
+    calendar_imgtk = ImageTk.PhotoImage(calendar_image)
+
+    calendar_button = ttk.Button(framecalendar, image=calendar_imgtk, command=lambda: switchwindow(root))
+    calendar_button.pack(pady=10)
+
+    # Create a button with the home image
+    home_button = ttk.Button(framehome, image=home_imgtk, command=lambda: switchwindow(root))
+    home_button.pack(pady=10)
+
+    frametime = tk.Frame(canvas, bg="#C0C0C0", bd=2, relief="ridge")
+    frametime.place(relx=0.9, rely=0.1, anchor="e", width=100, height=50)
+
+    framedate = tk.Frame(canvas, bg="#C0C0C0", bd=2, relief="ridge")
+    framedate.place(relx=0.83, rely=0.1, anchor="e", width=100, height=50)
+
+    # Create labels for time and date
+    time_label = tk.Label(frametime, font=("Oswald", 20), bg="#C0C0C0", fg="black")
+    time_label.pack(pady=10)
+
+    date_label = tk.Label(framedate, font=("Oswald", 14), bg="#C0C0C0", fg="black")
+    date_label.pack(pady=10)
+
+    #----------------------------------------------------------- BUTTONS -------------------------------------------------------------------------
+    style = ttk.Style()
+    style.configure("TButton", font=("Oswald", 12), padding=10)
+
+    button1 = ttk.Button(frame, text="VENTA", command=sell_submodule)
+    button1.pack(pady=10)
+
+    button2 = ttk.Button(frame, text="PRODUCTO", command=product_submodule)
+    button2.pack(pady=10)
+
+    button3 = ttk.Button(frame, text="PROVEEDOR", command=supplier_submodule)
+    button3.pack(pady=10)
+
+    button4 = ttk.Button(frame, text="ENTRADAS - SALIDAS", command= incout_submodule)
+    button4.pack(pady=10)
+
+    button5 = ttk.Button(frame, text="NOMINA",command=roster_submodule)
+    button5.pack(pady=10)
+
+    button6 = ttk.Button(frame, text="INVENTARIO", command= inventory_submodule)
+    button6.pack(pady=10)
+
+    button7 = ttk.Button(frame, text="CLIENTE", command= customer_submodule)
+    button7.pack(pady=10)
+
+    button8 = ttk.Button(frame2, text="ENVIOS", command= delivery_submodule)
+    button8.pack(pady=10)
+
+    button9 = ttk.Button(frame2, text="SALDO PROVEEDORES", command=clientecredit_submodule)
+    button9.pack(pady=10)
+
+    button10 = ttk.Button(frame2, text="SALDO CLIENTES")
+    button10.pack(pady=10)
+
+    button11 = ttk.Button(frame2, text="VENTAS POR COBRAR")
+    button11.pack(pady=10)
+
+    button12 = ttk.Button(frame2, text="RESULTADOS GENERALES")
+    button12.pack(pady=10)
+
+    button13 = ttk.Button(frame3, text="REPORTE DE CLIENTES")
+    button13.pack(pady=10)
+
+    button14 = ttk.Button(frame3, text="REPORTE DE GASTOS")
+    button14.pack(pady=10)
+
+    button15 = ttk.Button(frame3, text="REPORTE DE VENTAS")
+    button15.pack(pady=10)
+
+    button17 = ttk.Button(frame3, text="REPORTE DE PRODUCTOS")
+    button17.pack(pady=10)
+
+    button18 = ttk.Button(frame3, text="REPORTE DE PROVEEDORES")
+
+    button18.pack(pady=10)
+
+    button19 = ttk.Button(frame3, text="REPORTE DE INVENTARIO")
+    button19.pack(pady=10)
+
+    #button20 = ttk.Button(frame3, text="CALENDARIO DE PAGOS")
+    #button20.pack(pady=10)
+
+    #button16 = ttk.Button(frame3, text="CALENDARIO DE COBROS")
+    #button16.pack(pady=10)
+
+
+    # Call the update_time function to initialize the labels
+    update_time(time_label, date_label)
+
+    # Start the main loop
+    root.mainloop()
+
+def switchwindow(ovalue):
+    ovalue.destroy()
+    mainwindow()
+
+def switchwindowroot(oovalue):
+    oovalue.destroy()
+    root()
+#------------------------------------------------------------ MAIN WINDOW ---------------------------------------------------------------------------
+def mainwindow():
+    # Initialize main window
+    mainwindow = tk.Toplevel()
+    mainwindow.title("TRUCK SHOPS MAIN")
+    mainwindow.geometry("1500x750")
+
+    # Load the background image
+    image_path = "bg1.jpg"  # Ensure this path is correct
+    background = Image.open(image_path)
+
+    # Resize the background image to fit the window size
+    background = background.resize((1500, 750), Image.LANCZOS)
+    bgimg = ImageTk.PhotoImage(background)
+
+    # Create a canvas to display the background image
+    canvas = tk.Canvas(mainwindow,highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+
+    # Add the background image to the canvas
+    canvas.create_image(0, 0, image=bgimg, anchor="nw")
+
+    # Load the logo image
+    logo_path = "logo.png"  # Ensure this path is correct
+    logo = Image.open(logo_path)
+    logo = logo.resize((500, 300), Image.LANCZOS)  # Resize the image as needed
+    logo_imgtk = ImageTk.PhotoImage(logo)
+
+    # Create a label with a background color to hold the logo image
+    logo_label = tk.Label(canvas, image=logo_imgtk, bg="#BFC1C2", relief="ridge")
+    logo_label.place(relx=0.5, rely=0.12, anchor="c", width=400, height=150)
+
+    frametime = tk.Frame(canvas, bg="#C0C0C0", bd=2, relief="ridge")
+    frametime.place(relx=0.9, rely=0.1, anchor="e", width=100, height=50)
+
+    framedate = tk.Frame(canvas, bg="#C0C0C0", bd=2, relief="ridge")
+    framedate.place(relx=0.83, rely=0.1, anchor="e", width=100, height=50)
+
+    # Create labels for time and date
+    time_label = tk.Label(frametime, font=("Oswald", 20), bg="#C0C0C0", fg="black")
+    time_label.pack(pady=10)
+
+    date_label = tk.Label(framedate, font=("Oswald", 14), bg="#C0C0C0", fg="black")
+    date_label.pack(pady=10)
+
+    framegraph = tk.Frame(canvas, bg="#C0C0C0", bd=2, relief="ridge")
+    framegraph.place(relx=0.5, rely=0.6, anchor="c", width=1400, height=500)
+
+    greeting_text = tk.Label(mainwindow, text="Bienvenida de vuelta, Yadira", font=("Oswald", 20, "bold"), bd=0, fg="Black", bg="#C0C0C0", highlightthickness=0)
+    greeting_text.place(relx=0.02, rely=0.2, anchor="w")  # Position it in the upper left corner
+    # Call the update_time function to initialize the labels
+    update_time(time_label, date_label)
+
+    framehome = tk.Frame(canvas, bg="#C0C0C0", bd=2, relief="ridge")
+    framehome.place(relx=0.05, rely=0.1, anchor="center", width=120, height=50)
+
+    # Create a button with the label "Menu" inside the frame
+    home_button = ttk.Button(framehome, text="Menu", command=lambda: switchwindowroot(mainwindow))
+    home_button.pack(pady=10)  # Reduce padding to fit the button in the frame
+
+    # Start the main loop
+    mainwindow.mainloop()
+#------------------------------------------------------- SUB MODULES -----------------------------------------------------------------------------
+def sell_submodule():
+    global entries
+    # Initialize main window
+    sellwindow = tk.Toplevel()
+    sellwindow.title("TRUCK SHOPS MAIN")
+    sellwindow.geometry("1500x700")
+
+    # Load the background image
+    image_path = "bg1.jpg"  # Ensure this path is correct
+    background = Image.open(image_path)
+
+    # Resize the background image to fit the window size
+    background = background.resize((1500, 700), Image.LANCZOS)
+    bgimg = ImageTk.PhotoImage(background)
+
+    # Create a canvas to display the background image
+    canvas = tk.Canvas(sellwindow, highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+
+    # Add the background image to the canvas
+    canvas.create_image(0, 0, image=bgimg, anchor="nw")
+
+    # Create a frame to place the widgets (textboxes and button)
+    input_frame = tk.Frame(sellwindow, bg='#C0C0C0')  # Set background color to C0C0C0
+    canvas.create_window(40, 20, anchor="nw", window=input_frame)
+
+
+    # Define a list of fields (labels for textboxes)
+    fields = ['Concepto', 'Fecha Venta', 'Vencimiento', 'Status', 'Venta Abono', 'Cliente', 'Nombre', 
+              'Exist Actual', 'Costo Invert', 'Cantidad', 'Pagado', 'Precio Unit', 'Cuenta', 'FormaPago', 
+              'Area', 'FolioFactura', 'TasaFactura', 'Emision', 'PrecioFinal', 'Unidades', 'Descuento', 
+              'Ingreso', 'CostoProd', 'TipoEntrega', 'CostEnvio', 'FechEnvio', 'LugEntrega', 'FechEntrega', 
+              'Comentarios', 'Codigo', 'Verif', 'StatusPago', 'MontoPdte', 'Ganancia', 'Margen', 
+              'Facturacion', 'Impuestos', 'NoVenta', 'MesFact', 'YrFact', 'Mes', 'Year', 'Registro']
+
+    # Dictionary to hold references to the Entry widgets
+    entries = {}
+
+    # Create textboxes (Entry) and labels in two columns
+    for idx, field in enumerate(fields):
+        label = tk.Label(input_frame, text=field, bg='#C0C0C0', font="Oswald")  # Label with custom font and color
+        entry = tk.Entry(input_frame, font="Oswald")  # Entry with custom font
+
+        # Place the labels and entries in two columns using grid layout
+        label.grid(row=idx // 4, column=(idx % 4) * 2, padx=10, pady=5, sticky="w")
+        entry.grid(row=idx // 4, column=(idx % 4) * 2 + 1, padx=10, pady=5, sticky="w")
+
+        entries[field] = entry
+
+    submit_button = tk.Button(input_frame, text="Submit", font="Oswald",command=lambda:switchto("sell"))
+
+    # Calculate the appropriate row for the button (place it after all entries)
+    button_row = (len(fields) // 4) + 1
+
+    # Place the button in the grid layout, spanning all columns
+    submit_button.grid(row=button_row, column=0, columnspan=4, pady=20)
+
+    # Start the main loop
+    sellwindow.mainloop()
+
+def product_submodule():
+    global productentries
+    # Initialize main window
+    prodwindow = tk.Toplevel()
+    prodwindow.title("TRUCK SHOPS MAIN")
+    prodwindow.geometry("800x700")
+
+    # Load the background image
+    image_path = "bg1.jpg"  # Ensure this path is correct
+    background = Image.open(image_path)
+
+    # Resize the background image to fit the window size
+    background = background.resize((1500, 700), Image.LANCZOS)
+    bgimg = ImageTk.PhotoImage(background)
+
+    # Create a canvas to display the background image
+    canvas = tk.Canvas(prodwindow, highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+
+    # Add the background image to the canvas
+    canvas.create_image(0, 0, image=bgimg, anchor="nw")
+
+    # Create a frame to place the widgets (textboxes and button)
+    input_frame = tk.Frame(prodwindow, bg='#C0C0C0')  # Set background color to C0C0C0
+    canvas.create_window(40, 20, anchor="nw", window=input_frame)
+
+
+    # Define a list of fields (labels for textboxes)
+    fields = ['Nombre','Codigo','Proveedor','Precio','Valor MIN','Valor MAX','Area','Costo Prod','Ventas','Ingreso','Cantidad','Gasto','Ganancia','Margen','No.Registro','Verif Nombre','Verif Codigo']
+
+    # Dictionary to hold references to the Entry widgets
+    productentries = {}
+
+    # Create textboxes (Entry) and labels in two columns
+    for idx, field in enumerate(fields):
+        label = tk.Label(input_frame, text=field, bg='#C0C0C0', font="Oswald")  # Label with custom font and color
+        entry = tk.Entry(input_frame, font="Oswald")  # Entry with custom font
+
+        # Place the labels and entries in two columns using grid layout
+        label.grid(row=idx // 2, column=(idx % 2) * 2, padx=10, pady=5, sticky="w")
+        entry.grid(row=idx // 2, column=(idx % 2) * 2 + 1, padx=10, pady=5, sticky="w")
+
+        productentries[field] = entry
+
+    submit_button = tk.Button(input_frame, text="Submit", font="Oswald",command=lambda: switchto("product"))
+
+    # Calculate the appropriate row for the button (place it after all entries)
+    button_row = (len(fields) // 2) + 1
+
+    # Place the button in the grid layout, spanning all columns
+    submit_button.grid(row=button_row, column=0, columnspan=4, pady=20)
+
+    # Start the main loop
+    prodwindow.mainloop()
+
+def supplier_submodule():
+    global supplierentries
+    # Initialize main window
+    supwindow = tk.Toplevel()
+    supwindow.title("TRUCK SHOPS MAIN")
+    supwindow.geometry("420x600")
+
+    # Load the background image
+    image_path = "bg1.jpg"  # Ensure this path is correct
+    background = Image.open(image_path)
+
+    # Resize the background image to fit the window size
+    background = background.resize((1500, 700), Image.LANCZOS)
+    bgimg = ImageTk.PhotoImage(background)
+
+    # Create a canvas to display the background image
+    canvas = tk.Canvas(supwindow, highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+
+    # Add the background image to the canvas
+    canvas.create_image(0, 0, image=bgimg, anchor="nw")
+
+    # Create a frame to place the widgets (textboxes and button)
+    input_frame = tk.Frame(supwindow, bg='#C0C0C0')  # Set background color to C0C0C0
+    canvas.create_window(40, 20, anchor="nw", window=input_frame)
+
+
+    # Define a list of fields (labels for textboxes)
+    fields = ['Empresa','Nombre','Contacto','Correo','DNI','Banco','Cta.Bancaria','Serv/Prod','No.Proveedor']
+
+    # Dictionary to hold references to the Entry widgets
+    supplierentries = {}
+
+    # Create textboxes (Entry) and labels in two columns
+    for idx, field in enumerate(fields):
+        label = tk.Label(input_frame, text=field, bg='#C0C0C0', font="Oswald")  # Label with custom font and color
+        entry = tk.Entry(input_frame, font="Oswald")  # Entry with custom font
+
+        # Place the labels and entries in two columns using grid layout
+        label.grid(row=idx // 1, column=(idx % 1) * 2, padx=10, pady=5, sticky="w")
+        entry.grid(row=idx // 1, column=(idx % 1) * 2 + 1, padx=10, pady=5, sticky="w")
+
+        supplierentries[field] = entry
+
+    submit_button = tk.Button(input_frame, text="Submit", font="Oswald",command=lambda: switchto("supplier"))
+
+    # Calculate the appropriate row for the button (place it after all entries)
+    button_row = (len(fields) // 1) + 1
+
+    # Place the button in the grid layout, spanning all columns
+    submit_button.grid(row=button_row, column=0, columnspan=4, pady=20)
+
+    # Start the main loop
+    supwindow.mainloop()
+
+def incout_submodule():
+    global incoutentries
+    # Initialize main window
+    incoutwindow = tk.Toplevel()
+    incoutwindow.title("TRUCK SHOPS MAIN")
+    incoutwindow.geometry("1200x800")
+
+    # Load the background image
+    image_path = "bg1.jpg"  # Ensure this path is correct
+    background = Image.open(image_path)
+
+    # Resize the background image to fit the window size
+    background = background.resize((1200, 800), Image.LANCZOS)
+    bgimg = ImageTk.PhotoImage(background)
+
+    # Create a canvas to display the background image
+    canvas = tk.Canvas(incoutwindow, highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+
+    # Add the background image to the canvas
+    canvas.create_image(0, 0, image=bgimg, anchor="nw")
+
+    # Create a frame to place the widgets (textboxes and button)
+    input_frame = tk.Frame(incoutwindow, bg='#C0C0C0')  # Set background color to C0C0C0
+    canvas.create_window(40, 20, anchor="nw", window=input_frame)
+
+
+    # Define a list of fields (labels for textboxes)
+    fields = ['Status',
+    'Fecha Gasto',
+    'Vencimiento',
+    'Tipo',
+    'Concepto',
+    'Subtipo',
+    'Proveedor',
+    'Costo Unitario',
+    'Pagado',
+    'Área',
+    'Nombre',
+    'Cantidad',
+    'Unidades',
+    'Forma de Pago',
+    'Cuenta',
+    'Folio Factura',
+    'Tasa de Factura',
+    'Emisión',
+    'Descripción',
+    'Código',
+    'Estado de Pago',
+    'Costo Final',
+    'Egreso',
+    'Monto Pendiente',
+    'Pago de Egreso',
+    'Facturación',
+    'Impuestos',
+    'Número de Gasto',
+    'Inversión Total',
+    'Mes de Factura',
+    'Año de Factura',
+    'Mes',
+    'Año',
+    'Registro']
+
+    # Dictionary to hold references to the Entry widgets
+    incoutentries = {}
+
+    # Create textboxes (Entry) and labels in two columns
+    for idx, field in enumerate(fields):
+        label = tk.Label(input_frame, text=field, bg='#C0C0C0', font="Oswald")  # Label with custom font and color
+        entry = tk.Entry(input_frame, font="Oswald")  # Entry with custom font
+
+        # Place the labels and entries in two columns using grid layout
+        label.grid(row=idx // 3, column=(idx % 3) * 2, padx=10, pady=5, sticky="w")
+        entry.grid(row=idx // 3, column=(idx % 3) * 2 + 1, padx=10, pady=5, sticky="w")
+
+        incoutentries[field] = entry
+
+    submit_button = tk.Button(input_frame, text="Submit", font="Oswald",command=lambda: switchto("incout"))
+
+    # Calculate the appropriate row for the button (place it after all entries)
+    button_row = (len(fields) // 3) + 1
+
+    # Place the button in the grid layout, spanning all columns
+    submit_button.grid(row=button_row, column=0, columnspan=4, pady=20)
+
+    # Start the main loop
+    incoutwindow.mainloop()
+
+def roster_submodule():
+    global rosterentries
+    # Initialize main window
+    rosterwindowe = tk.Toplevel()
+    rosterwindowe.title("TRUCK SHOPS MAIN")
+    rosterwindowe.geometry("400x800")
+
+    # Load the background image
+    image_path = "bg1.jpg"  # Ensure this path is correct
+    background = Image.open(image_path)
+
+    # Resize the background image to fit the window size
+    background = background.resize((1500, 800), Image.LANCZOS)
+    bgimg = ImageTk.PhotoImage(background)
+
+    # Create a canvas to display the background image
+    canvas = tk.Canvas(rosterwindowe, highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+
+    # Add the background image to the canvas
+    canvas.create_image(0, 0, image=bgimg, anchor="nw")
+
+    # Create a frame to place the widgets (textboxes and button)
+    input_frame = tk.Frame(rosterwindowe, bg='#C0C0C0')  # Set background color to C0C0C0
+    canvas.create_window(40, 20, anchor="nw", window=input_frame)
+
+
+    # Define a list of fields (labels for textboxes)
+    fields = ['Nombre',
+        'Fecha Ingreso',
+        'Salario',
+        'Horas',
+        'Costo/Hora',
+        'Periodo',
+        'Área',
+        'Nivel',
+        'Tiempo',
+        'Rendimiento',
+        'Proporción',
+        'Acumulado']
+
+    # Dictionary to hold references to the Entry widgets
+    rosterentries = {}
+
+    # Create textboxes (Entry) and labels in two columns
+    for idx, field in enumerate(fields):
+        label = tk.Label(input_frame, text=field, bg='#C0C0C0', font="Oswald")  # Label with custom font and color
+        entry = tk.Entry(input_frame, font="Oswald")  # Entry with custom font
+
+        # Place the labels and entries in two columns using grid layout
+        label.grid(row=idx // 1, column=(idx % 1) * 2, padx=10, pady=5, sticky="w")
+        entry.grid(row=idx // 1, column=(idx % 1) * 2 + 1, padx=10, pady=5, sticky="w")
+
+        rosterentries[field] = entry
+
+    submit_button = tk.Button(input_frame, text="Submit", font="Oswald",command=lambda: switchto("roster"))
+
+    # Calculate the appropriate row for the button (place it after all entries)
+    button_row = (len(fields) // 1) + 1
+
+    # Place the button in the grid layout, spanning all columns
+    submit_button.grid(row=button_row, column=0, columnspan=4, pady=20)
+
+    # Start the main loop
+    rosterwindowe.mainloop()
+
+def customer_submodule():
+    global customerentries
+    # Initialize main window
+    customerwindow = tk.Toplevel()
+    customerwindow.title("TRUCK SHOPS MAIN")
+    customerwindow.geometry("430x500")
+
+    # Load the background image
+    image_path = "bg1.jpg"  # Ensure this path is correct
+    background = Image.open(image_path)
+
+    # Resize the background image to fit the window size
+    background = background.resize((1500, 700), Image.LANCZOS)
+    bgimg = ImageTk.PhotoImage(background)
+
+    # Create a canvas to display the background image
+    canvas = tk.Canvas(customerwindow, highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+
+    # Add the background image to the canvas
+    canvas.create_image(0, 0, image=bgimg, anchor="nw")
+
+    # Create a frame to place the widgets (textboxes and button)
+    input_frame = tk.Frame(customerwindow, bg='#C0C0C0')  # Set background color to C0C0C0
+    canvas.create_window(40, 20, anchor="nw", window=input_frame)
+
+
+    # Define a list of fields (labels for textboxes)
+    fields = ['Cliente',
+        'No. Cliente',
+        'Telefono',
+        'Correo',
+        'Empresa',
+        'DNI',
+        'Ubicacion',]
+
+    # Dictionary to hold references to the Entry widgets
+    customerentries = {}
+
+    # Create textboxes (Entry) and labels in two columns
+    for idx, field in enumerate(fields):
+        label = tk.Label(input_frame, text=field, bg='#C0C0C0', font="Oswald")  # Label with custom font and color
+        entry = tk.Entry(input_frame, font="Oswald")  # Entry with custom font
+
+        # Place the labels and entries in two columns using grid layout
+        label.grid(row=idx // 1, column=(idx % 1) * 2, padx=10, pady=5, sticky="w")
+        entry.grid(row=idx // 1, column=(idx % 1) * 2 + 1, padx=10, pady=5, sticky="w")
+
+        customerentries[field] = entry
+
+    submit_button = tk.Button(input_frame, text="Submit", font="Oswald",command=lambda: switchto("customer"))
+
+    # Calculate the appropriate row for the button (place it after all entries)
+    button_row = (len(fields) // 1) + 1
+
+    # Place the button in the grid layout, spanning all columns
+    submit_button.grid(row=button_row, column=0, columnspan=4, pady=20)
+
+    # Start the main loop
+    customerwindow.mainloop()
+
+def inventory_submodule():
+    global inventoryentries
+    # Initialize main window
+    inventorywindow = tk.Toplevel()
+    inventorywindow.title("TRUCK SHOPS MAIN")
+    inventorywindow.geometry("430x700")
+
+    # Load the background image
+    image_path = "bg1.jpg"  # Ensure this path is correct
+    background = Image.open(image_path)
+
+    # Resize the background image to fit the window size
+    background = background.resize((1500, 700), Image.LANCZOS)
+    bgimg = ImageTk.PhotoImage(background)
+
+    # Create a canvas to display the background image
+    canvas = tk.Canvas(inventorywindow, highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+
+    # Add the background image to the canvas
+    canvas.create_image(0, 0, image=bgimg, anchor="nw")
+
+    # Create a frame to place the widgets (textboxes and button)
+    input_frame = tk.Frame(inventorywindow, bg='#C0C0C0')  # Set background color to C0C0C0
+    canvas.create_window(40, 20, anchor="nw", window=input_frame)
+
+
+    # Define a list of fields (labels for textboxes)
+    fields = ['Nombre',
+        'Codigo',
+        'Proveedor',
+        'Entradas',
+        'Salidas',
+        'Exist Actual',
+        'Almacen_percent',
+        'Status',
+        'Inversión',
+        'Ventas',
+        'Ganancia']
+
+    # Dictionary to hold references to the Entry widgets
+    inventoryentries = {}
+
+    # Create textboxes (Entry) and labels in two columns
+    for idx, field in enumerate(fields):
+        label = tk.Label(input_frame, text=field, bg='#C0C0C0', font="Oswald")  # Label with custom font and color
+        entry = tk.Entry(input_frame, font="Oswald")  # Entry with custom font
+
+        # Place the labels and entries in two columns using grid layout
+        label.grid(row=idx // 1, column=(idx % 1) * 2, padx=10, pady=5, sticky="w")
+        entry.grid(row=idx // 1, column=(idx % 1) * 2 + 1, padx=10, pady=5, sticky="w")
+
+        inventoryentries[field] = entry
+
+    submit_button = tk.Button(input_frame, text="Submit", font="Oswald",command=lambda: switchto("inventory"))
+
+    # Calculate the appropriate row for the button (place it after all entries)
+    button_row = (len(fields) // 1) + 1
+
+    # Place the button in the grid layout, spanning all columns
+    submit_button.grid(row=button_row, column=0, columnspan=4, pady=20)
+
+    # Start the main loop
+    inventorywindow.mainloop() 
+
+def delivery_submodule():
+
+    masterxlsx = 'inv_maestro.xlsx'
+    productreg = 'VENTA'
+
+    df = pd.read_excel(masterxlsx , sheet_name=productreg)
+    # Convert 'Fech Entrega' column to datetime
+    df['Fech Entrega'] = pd.to_datetime(df['Fech Entrega'], errors='coerce')
+
+    # Filter rows where the difference between 'Fech Entrega' and today is less than 30 days
+    today = datetime.today()
+    filtered_df = df[df['Fech Entrega'].apply(lambda x: (x - today).days <= 30)]
+
+    # Initialize main window
+    deliveryywindow = tk.Toplevel()
+    deliveryywindow.title("TRUCK SHOPS MAIN")
+    deliveryywindow.geometry("1000x600")  # Adjust the size accordingly
+
+    # Load the background image
+    image_path = "bg1.jpg"  # Ensure this path is correct
+    background = Image.open(image_path)
+    background = background.resize((1500, 700), Image.LANCZOS)
+    bgimg = ImageTk.PhotoImage(background)
+
+    # Create a canvas to display the background image
+    canvas = tk.Canvas(deliveryywindow, highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+    canvas.create_image(0, 0, image=bgimg, anchor="nw")
+
+    # Create a frame for the table
+    table_frame = tk.Frame(canvas)
+    table_frame.place(x=50, y=50, width=900, height=500)
+
+    # Create the Treeview widget (table)
+    columns = ("ID", "Cliente", "Nombre", "Cantidad", "Fecha Venta", "Tipo Entrega", "Fech Envio", "Lug Entrega", "Fech Entrega")
+    tree = ttk.Treeview(table_frame, columns=columns, show="headings")
+    
+    for col in columns:
+        tree.heading(col, text=col)
+        tree.column(col, width=100)  # Adjust the column width as needed
+
+    # Define tag styles for coloring rows
+    tree.tag_configure('red', background='red')
+    tree.tag_configure('yellow', background='yellow')
+    tree.tag_configure('green', background='green')
+
+    # Insert the data into the Treeview with color coding
+    for idx, row in filtered_df.iterrows():
+        days_diff = (row['Fech Entrega'] - today).days
+        
+        if days_diff <= 10:
+            tag = 'red'
+        elif 10 < days_diff <= 20:
+            tag = 'yellow'
+        else:
+            tag = 'green'
+        
+        tree.insert("", "end", values=(idx+1, row["Cliente"], row["Nombre"], row["Cantidad"], 
+                                       row["Fecha Venta"], row["Tipo Entrega"], row["Fech Envio"], 
+                                       row["Lug Entrega"], row["Fech Entrega"]), tags=(tag,))
+
+    # Attach the treeview to the window
+    tree.pack(fill="both", expand=True)
+
+    # Start the main loop
+    deliveryywindow.mainloop()
+
+def suppliercredit_submodule():
+
+    masterxlsx = 'inv_maestro.xlsx'
+    productreg = 'SUPPLIER'
+    incout_sheet = 'INCOUT'
+
+
+    df_supplier = pd.read_excel(masterxlsx, sheet_name=productreg)
+    
+
+    df_incout = pd.read_excel(masterxlsx, sheet_name=incout_sheet)
+    
+
+    supplierwindow = tk.Toplevel()
+    supplierwindow.title("TRUCK SHOPS MAIN")
+    supplierwindow.geometry("1000x600")  
+
+
+    image_path = "bg1.jpg" 
+    background = Image.open(image_path)
+    background = background.resize((1500, 700), Image.LANCZOS)
+    bgimg = ImageTk.PhotoImage(background)
+
+
+    canvas = tk.Canvas(supplierwindow, highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+    canvas.create_image(0, 0, image=bgimg, anchor="nw")
+
+ 
+    table_frame = tk.Frame(canvas)
+    table_frame.place(x=50, y=50, width=900, height=500)
+
+    columns = ("ID", "Empresa", "Adeudo Total")
+    tree = ttk.Treeview(table_frame, columns=columns, show="headings")
+    
+
+    for col in columns:
+        tree.heading(col, text=col)
+        tree.column(col, width=200) 
+
+
+    for idx, row in df_supplier.iterrows():
+        empresa = row['Empresa']
+        
+
+        incout_matches = df_incout[df_incout['Proveedor'] == empresa]
+        
+
+        total_adeudo = 0
+        for _, incout_row in incout_matches.iterrows():
+            if incout_row['Pagado'] == 'Adeudo':
+                total_adeudo += incout_row['Inversion Total']
+
+
+        tree.insert("", "end", values=(idx+1, empresa, total_adeudo if total_adeudo > 0 else "No Adeudo"))
+
+
+    tree.pack(fill="both", expand=True)
+
+
+    supplierwindow.mainloop() 
+
+def clientecredit_submodule():
+    # Define Excel properties
+    masterxlsx = 'inv_maestro.xlsx'
+    venta_sheet = 'VENTA'
+
+    # Load the "VENTA" sheet
+    try:
+        df_venta = pd.read_excel(masterxlsx, sheet_name=venta_sheet)
+    except FileNotFoundError:
+        print(f"File {masterxlsx} not found.")
+        return
+    except ValueError:
+        print(f"Sheet {venta_sheet} not found in the Excel file.")
+        return
+
+    # Ensure 'Cantidad' column is numeric, convert non-numeric values to NaN, and fill NaNs with 0
+    df_venta['Cantidad'] = pd.to_numeric(df_venta['Cantidad'], errors='coerce').fillna(0)
+
+    # Aggregate the "Cantidad" for each "Cliente"
+    acumulado_df = df_venta.groupby('Cliente', as_index=False).agg({'Cantidad': 'sum'})
+    acumulado_df.rename(columns={'Cantidad': 'Acumulado'}, inplace=True)
+
+    # Calculate "Ingresado" based on "Pagado" status
+    def calculate_ingresado(row):
+        client_data = df_venta[(df_venta['Cliente'] == row['Cliente']) & (df_venta['Pagado'] == 'no pagado')]
+        rest_value = client_data['Cantidad'].sum()
+        return row['Acumulado'] - rest_value
+
+    acumulado_df['Ingresado'] = acumulado_df.apply(calculate_ingresado, axis=1)
+
+    # Calculate "Importe a Pagar" as the difference between "Acumulado" and "Ingresado"
+    acumulado_df['Importe a Pagar'] = acumulado_df['Acumulado'] - acumulado_df['Ingresado']
+
+    # Create the Tkinter window
+    clientwindow = tk.Toplevel()
+    clientwindow.title("TRUCK SHOPS MAIN - Credit Info")
+    clientwindow.geometry("1000x600")
+
+    # Load and set background image
+    image_path = "bg1.jpg"
+    background = Image.open(image_path)
+    background = background.resize((1500, 700), Image.LANCZOS)
+    bgimg = ImageTk.PhotoImage(background)
+
+    canvas = tk.Canvas(clientwindow, highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+    canvas.create_image(0, 0, image=bgimg, anchor="nw")
+
+    # Create a frame for the table
+    table_frame = tk.Frame(canvas)
+    table_frame.place(x=50, y=50, width=900, height=500)
+
+    # Define the columns for the Treeview
+    columns = ("Cliente", "Acumulado", "Ingresado", "Importe a Pagar")
+    tree = ttk.Treeview(table_frame, columns=columns, show="headings")
+
+    # Set up column headers and width
+    for col in columns:
+        tree.heading(col, text=col)
+        tree.column(col, width=100)
+
+    # Define tag styles for coloring rows based on "Importe a Pagar"
+    tree.tag_configure('low', background='green')
+    tree.tag_configure('medium', background='yellow')
+    tree.tag_configure('high', background='red')
+
+    # Insert data into the Treeview with color coding based on "Importe a Pagar"
+    for _, row in acumulado_df.iterrows():
+        importe_a_pagar = row["Importe a Pagar"]
+
+        # Determine the tag based on the value of "Importe a Pagar"
+        if importe_a_pagar < 1000:
+            tag = 'low'
+        elif 1000 <= importe_a_pagar < 5000:
+            tag = 'medium'
+        else:
+            tag = 'high'
+
+        tree.insert("", "end", values=(row["Cliente"], row["Acumulado"], row["Ingresado"], importe_a_pagar), tags=(tag,))
+
+    # Attach the Treeview to the window
+    tree.pack(fill="both", expand=True)
+
+    # Start the Tkinter event loop
+    clientwindow.mainloop()
+
+def sell_register():
+    # DEFINE XLSX PROPERTIES
+    masterxlsx = 'inv_maestro.xlsx'
+    productreg = 'VENTA'
+
+    # Cargar el libro existente y la hoja especificada en un DataFrame
+    try:
+        # Load existing data
+        existing_df = pd.read_excel(masterxlsx, sheet_name=productreg)
+    except FileNotFoundError:
+        # If the file doesn't exist, create an empty DataFrame
+        existing_df = pd.DataFrame()
+
+    # Obtener valores de las entradas (replace this with actual input handling)
+    Con = entries['Concepto'].get()
+    Selldate = entries['Fecha Venta'].get()
+    expiration = entries['Vencimiento'].get()
+    stat = entries['Status'].get()
+    abonsell = entries['Venta Abono'].get()
+    client = entries['Cliente'].get()
+    name = entries['Nombre'].get()
+    actualexist = entries['Exist Actual'].get()
+    invcost = entries['Costo Invert'].get()
+    qty = entries['Cantidad'].get()
+    payed = entries['Pagado'].get()
+    unitprice = entries['Precio Unit'].get()
+    account = entries['Cuenta'].get()
+    paymethod = entries['FormaPago'].get()
+    oarea = entries['Area'].get()
+    id = entries['FolioFactura'].get()
+    billrate = entries['TasaFactura'].get()
+    oEmision = entries['TasaFactura'].get()
+
+    # Variables de prueba
+    finalprice = "Test"  # Preciofinal
+    unities = "Test"  # Unidades
+    disc = "Test"  # Descuento
+    income = "Test"  # Ingreso
+    prodcost = "Test"  # CostoProd
+    delivertype = "Test"  # TipoEntrega
+    sendcost = "Test"  # CostEnvio
+    senddate = "Test"  # FechEnvio
+    deliverplace = "Test"  # LugEntrega
+    deliverdate = "Test"  # FechEntrega
+    comments = "Test"  # Comentarios
+    code = "Test"  # Codigo
+    Verification = "Test"  # Verif
+    paystatus = "Test"  # StatusPago
+    pendingmount = "Test"  # MontoPdte
+    earnings = "Test"  # Ganancia
+    margin = "Test"  # Margen
+    billing = "Test"  # Facturacion
+    tax = "Test"  # Impuestos
+    sellno = "Test"  # NoVenta
+    billmonth = "Test"  # MesFact
+    billyear = "Test"  # YrFact
+    month = "Test"  # Mes
+    Yr = "Test"  # Year
+    register = "Test"  # Registro
+
+    # -------------------------------------------------------- DEFINE VALUES ------------------------------------------------------------------------
+
+    new_product = {
+        'Concepto': Con,
+        'Fecha Venta': Selldate,
+        'Vencimiento': expiration,
+        'Status': stat,
+        'Venta Abono': abonsell,
+        'Cliente': client,
+        'Nombre': name,
+        'Exist Actual': actualexist,
+        'Costo Invert': invcost,
+        'Cantidad': qty,
+        'Pagado': payed,
+        'Precio Unit': unitprice,
+        'Cuenta': account,
+        'Forma Pago': paymethod,
+        'Area': oarea,
+        'Folio Factura': id,
+        'Tasa Factura': billrate,
+        'Emision': oEmision,
+        'Precio Final': finalprice,
+        'Unidades': unities,
+        'Descuento': disc,
+        'Ingreso': income,
+        'Costo Prod': prodcost,
+        'Tipo Entrega': delivertype,
+        'Cost Envio': sendcost,
+        'Fech Envio': senddate,
+        'Lug Entrega': deliverplace,
+        'Fech Entrega': deliverdate,
+        'Comentarios': comments,
+        'Codigo': code,
+        'Verif': Verification,
+        'Status Pago': paystatus,
+        'Monto Pdte.': pendingmount,
+        'Ganancia': earnings,
+        'Margen': margin,
+        'Facturacion': billing,
+        'Impuestos': tax,
+        'No. Venta': sellno,
+        'Mes Fact': billmonth,
+        'Año Fact': billyear,
+        'Mes': month,
+        'Año': Yr,
+        'Registro': register,
+    }
+
+    # Convertir el diccionario a un DataFrame
+    new_product_df = pd.DataFrame([new_product])
+
+    # Concatenar con los datos existentes
+    df = pd.concat([existing_df, new_product_df], ignore_index=True)
+
+    # Guardar los cambios en el archivo Excel
+    with pd.ExcelWriter(masterxlsx, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
+        df.to_excel(writer, sheet_name=productreg, index=False)
+
+    print("Venta registrada correctamente.")
+
+def prod_register():
+    # DEFINE XLSX PROPERTIES
+    masterxlsx = 'inv_maestro.xlsx'
+    productreg = 'PRODSERV'
+
+     # Cargar el libro existente y la hoja especificada en un DataFrame
+    try:
+        # Load existing data
+        existing_df = pd.read_excel(masterxlsx, sheet_name=productreg)
+    except FileNotFoundError:
+        # If the file doesn't exist, create an empty DataFrame
+        existing_df = pd.DataFrame()
+
+    # Leave the options
+    name = productentries['Nombre'].get()
+    code = productentries['Codigo'].get()
+    seller = productentries['Proveedor'].get()
+    price = productentries['Precio'].get()
+    min_value = productentries['Valor MIN'].get()
+    max_value = productentries['Valor MAX'].get()
+    area = productentries['Area'].get()
+    prod_cost = productentries['Costo Prod'].get()
+    sellings = productentries['Ventas'].get()
+    income = productentries['Ingreso'].get()
+    qty = productentries['Cantidad'].get()
+    outcomes = productentries['Gasto'].get()
+    earnings = productentries['Ganancia'].get()
+    margin = productentries['Margen'].get()
+    reg_no = productentries['No.Registro'].get()
+    name_verif = productentries['Verif Nombre'].get()
+    code_verif = productentries['Verif Codigo'].get()
+    # -------------------------------------------------------- DEFINE VALUES ------------------------------------------------------------------------
+
+    new_product = {
+        'Nombre' : name,
+        'Codigo' : code,
+        'Proveedor': seller,
+        'Precio': price,
+        'Valor MIN': min_value,
+        'Valor MAX': max_value,
+        'Area' : area,
+        'Costo Prod': prod_cost,
+        'Ventas' : sellings,
+        'Ingreso' : income,
+        'Cantidad' : qty,
+        'Gasto' : outcomes,
+        'Ganancia' : earnings,
+        'Margen' : margin,
+        'No.Registro': reg_no,
+        'Verif Nombre':name_verif,
+        'Verif Codigo':code_verif
+
+    }
+
+    new_product_df = pd.DataFrame([new_product])
+
+    df = pd.concat([existing_df, new_product_df], ignore_index=True)
+
+    with pd.ExcelWriter(masterxlsx, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
+        df.to_excel(writer, sheet_name=productreg, index=False)
+
+    print("Producto registrado correctamente.")
+
+def sup_register():
+     # DEFINE XLSX PROPERTIES
+    masterxlsx = 'inv_maestro.xlsx'
+    productreg = 'SUPPLIER'
+
+    try:
+        # Load existing data
+        existing_df = pd.read_excel(masterxlsx, sheet_name=productreg)
+    except FileNotFoundError:
+        # If the file doesn't exist, create an empty DataFrame
+        existing_df = pd.DataFrame()
+
+    # -------------------------------------------------------- DEFINE VALUES ------------------------------------------------------------------------
+
+    new_product = {
+        'Empresa' : supplierentries['Empresa'].get(),
+        'Nombre' : supplierentries['Nombre'].get(),
+        'Contacto': supplierentries['Contacto'].get(),
+        'Correo': supplierentries['Correo'].get(),
+        'DNI': supplierentries['DNI'].get(),
+        'Banco': supplierentries['Banco'].get(),
+        'Cta.Bancaria' : supplierentries['Cta.Bancaria'].get(),
+        'Serv/Prod': supplierentries['Serv/Prod'].get(),
+        'No.Proveedor' : supplierentries['No.Proveedor'].get()
+    
+    }
+
+    new_product_df = pd.DataFrame([new_product])
+
+    df = pd.concat([existing_df, new_product_df], ignore_index=True)
+
+    with pd.ExcelWriter(masterxlsx, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
+        df.to_excel(writer, sheet_name=productreg, index=False)
+
+    print("Supplier registrado correctamente.")
+
+def incout_register():
+      # DEFINE XLSX PROPERTIES
+    masterxlsx = 'inv_maestro.xlsx'
+    productreg = 'INCOUT'
+
+    try:
+        # Load existing data
+        existing_df = pd.read_excel(masterxlsx, sheet_name=productreg)
+    except FileNotFoundError:
+        # If the file doesn't exist, create an empty DataFrame
+        existing_df = pd.DataFrame()
+
+    # -------------------------------------------------------- DEFINE VALUES ------------------------------------------------------------------------
+
+    new_product = {
+    'Status': incoutentries['Status'].get(),
+    'Fecha Gasto': incoutentries['Fecha Gasto'].get(),
+    'Vencimiento': incoutentries['Vencimiento'].get(),
+    'Tipo': incoutentries['Tipo'].get(),
+    'Concepto': incoutentries['Concepto'].get(),
+    'Subtipo': incoutentries['Subtipo'].get(),
+    'Proveedor': incoutentries['Proveedor'].get(),
+    'Costo Unitario': incoutentries['Costo Unitario'].get(),
+    'Pagado': incoutentries['Pagado'].get(),
+    'Área': incoutentries['Área'].get(),
+    'Nombre': incoutentries['Nombre'].get(),
+    'Cantidad': incoutentries['Cantidad'].get(),
+    'Unidades': incoutentries['Unidades'].get(),
+    'Forma de Pago': incoutentries['Forma de Pago'].get(),
+    'Cuenta': incoutentries['Cuenta'].get(),
+    'Folio Factura': incoutentries['Folio Factura'].get(),
+    'Tasa de Factura': incoutentries['Tasa de Factura'].get(),
+    'Emisión': incoutentries['Emisión'].get(),
+    'Descripción': incoutentries['Descripción'].get(),
+    'Código': incoutentries['Código'].get(),
+    'Estado de Pago': incoutentries['Estado de Pago'].get(),
+    'Costo Final': incoutentries['Costo Final'].get(),
+    'Egreso': incoutentries['Egreso'].get(),
+    'Monto Pendiente': incoutentries['Monto Pendiente'].get(),
+    'Pago de Egreso': incoutentries['Pago de Egreso'].get(),
+    'Facturación': incoutentries['Facturación'].get(),
+    'Impuestos': incoutentries['Impuestos'].get(),
+    'Número de Gasto': incoutentries['Número de Gasto'].get(),
+    'Inversión Total': incoutentries['Inversión Total'].get(),
+    'Mes de Factura': incoutentries['Mes de Factura'].get(),
+    'Año de Factura': incoutentries['Año de Factura'].get(),
+    'Mes': incoutentries['Mes'].get(),
+    'Año': incoutentries['Año'].get(),
+    'Registro': incoutentries['Registro'].get()}
+
+    new_product_df = pd.DataFrame([new_product])
+
+    df = pd.concat([existing_df, new_product_df], ignore_index=True)
+
+    with pd.ExcelWriter(masterxlsx, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
+        df.to_excel(writer, sheet_name=productreg, index=False)
+
+    print("Income / Outcome registrado correctamente.")
+
+def roster_register():
+    # DEFINE XLSX PROPERTIES
+    masterxlsx = 'inv_maestro.xlsx'
+    productreg = 'ROSTER'
+
+    try:
+        # Load existing data
+        existing_df = pd.read_excel(masterxlsx, sheet_name=productreg)
+    except FileNotFoundError:
+        # If the file doesn't exist, create an empty DataFrame
+        existing_df = pd.DataFrame()
+
+    # -------------------------------------------------------- DEFINE VALUES ------------------------------------------------------------------------
+
+    new_employee = {
+        'Nombre': rosterentries['Nombre'].get(),
+        'Fecha Ingreso': rosterentries['Fecha Ingreso'].get(),
+        'Salario': rosterentries['Salario'].get(),
+        'Horas': rosterentries['Horas'].get(),
+        'Costo/Hora': rosterentries['Costo/Hora'].get(),
+        'Periodo': rosterentries['Periodo'].get(),
+        'Área': rosterentries['Área'].get(),
+        'Nivel': rosterentries['Nivel'].get(),
+        'Tiempo': rosterentries['Tiempo'].get(),
+        'Rendimiento': rosterentries['Rendimiento'].get(),
+        'Proporción': rosterentries['Proporción'].get(),
+        'Acumulado': rosterentries['Acumulado'].get()
+    }
+
+    new_product_df = pd.DataFrame([new_employee])
+
+    df = pd.concat([existing_df, new_product_df], ignore_index=True)
+
+    with pd.ExcelWriter(masterxlsx, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
+        df.to_excel(writer, sheet_name=productreg, index=False)
+
+    print("Roster registrado correctamente.")
+
+def costumer_registration():
+    # Define XLSX properties
+    masterxlsx = 'inv_maestro.xlsx'
+    productreg = 'CLIENTE'
+
+    # Read the existing Excel file including all sheets
+    try:
+        # Load existing data
+        existing_df = pd.read_excel(masterxlsx, sheet_name=productreg)
+    except FileNotFoundError:
+        # If the file doesn't exist, create an empty DataFrame
+        existing_df = pd.DataFrame()
+
+    # -------------------------------------------------------- DEFINE VALUES ------------------------------------------------------------------------
+    new_customer = {
+        'Cliente': customerentries['Cliente'].get(),
+        'No. Cliente': customerentries['No. Cliente'].get(),
+        'Telefono': customerentries['Telefono'].get(),
+        'Correo': customerentries['Correo'].get(),
+        'Empresa': customerentries['Empresa'].get(),
+        'DNI': customerentries['DNI'].get(),
+        'Ubicacion': customerentries['Ubicacion'].get(),
+    }
+
+    # Convert the new entry into a DataFrame
+    new_product_df = pd.DataFrame([new_customer])
+
+    # Concatenate the new customer entry to the existing dataframe
+    df = pd.concat([existing_df, new_product_df], ignore_index=True)
+
+    with pd.ExcelWriter(masterxlsx, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
+        df.to_excel(writer, sheet_name=productreg, index=False)
+
+    print("Customer registered successfully.")
+
+def inventory_registration():
+        # DEFINE XLSX PROPERTIES
+    masterxlsx = 'inv_maestro.xlsx'
+    productreg = 'INVENTARIO'
+
+
+    try:
+        # Load existing data
+        existing_df = pd.read_excel(masterxlsx, sheet_name=productreg)
+    except FileNotFoundError:
+        # If the file doesn't exist, create an empty DataFrame
+        existing_df = pd.DataFrame()
+
+    # -------------------------------------------------------- DEFINE VALUES ------------------------------------------------------------------------
+    new_employee = {
+        'Nombre': inventoryentries['Nombre'].get(),
+        'Codigo': inventoryentries['Codigo'].get(),
+        'Proveedor': inventoryentries['Proveedor'].get(),
+        'Entradas': inventoryentries['Entradas'].get(),
+        'Salidas': inventoryentries['Salidas'].get(),
+        'Exist Actual': inventoryentries['Exist Actual'].get(),
+        'Almacen_percent': inventoryentries['Almacen_percent'].get(),
+        'Status':inventoryentries['Status'].get(),
+        'Inversión':inventoryentries['Inversión'].get(),
+        'Ventas' : inventoryentries['Ventas'].get(),
+        'Ganancia': inventoryentries['Ganancia'].get()
+    }
+
+    new_product_df = pd.DataFrame([new_employee])
+
+    df = pd.concat([existing_df, new_product_df], ignore_index=True)
+
+    with pd.ExcelWriter(masterxlsx, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
+        df.to_excel(writer, sheet_name=productreg, index=False)
+
+def switchto(window):
+    if window == "sell":
+        sell_register()
+    elif window == "product":
+        prod_register()
+    elif window == "supplier":
+        sup_register()
+    elif window == "incout":
+        incout_register()
+    elif window== "roster":
+        roster_register()
+    elif window == "customer":
+        costumer_registration()
+    elif window == "inventory":
+        inventory_registration()
+    
+
+
+# Create the login window
+login = tk.Toplevel()
+login.title("Login Window")
+login.geometry("400x300")
+
+# Load the home button image
+home_image_path = "logo.png"  # Ensure this path is correct
+home_image = Image.open(home_image_path)
+home_image = home_image.resize((80, 70), Image.LANCZOS)  # Resize the image as needed
+home_imgtk = ImageTk.PhotoImage(home_image)
+
+# Create a label to hold the image and place it at the top center
+image_label = tk.Label(login, image=home_imgtk)
+image_label.pack(pady=20)  # Padding to position the image lower from the top
+
+# Center the image horizontally
+image_label.place(relx=0.5, y=20, anchor="n")
+
+# Create a frame for the login form
+frame = tk.Frame(login, padx=20, pady=20)
+frame.pack(expand=True)
+
+# Username label and entry
+username_label = tk.Label(frame, text="Usuario:")
+username_label.grid(row=4, column=0, pady=10)
+username_entry = tk.Entry(frame)
+username_entry.grid(row=4, column=1, pady=10)
+
+# Password label and entry
+password_label = tk.Label(frame, text="Contraseña:")
+password_label.grid(row=5, column=0, pady=10)
+password_entry = tk.Entry(frame, show="*")
+password_entry.grid(row=5, column=1, pady=10)
+
+# Submit button
+submit_button = tk.Button(frame, text="Submit", command=handle_login)
+submit_button.grid(row=6, columnspan=2, pady=20)
+
+# Start the login window's main loop
+login.mainloop()

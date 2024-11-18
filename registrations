@@ -7,6 +7,7 @@ from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 from datetime import datetime
 from openpyxl import load_workbook
+import os
 
 
 root_tk = tk.Tk()
@@ -140,35 +141,35 @@ def root():
     button8 = ttk.Button(frame2, text="ENVIOS", command= delivery_submodule)
     button8.pack(pady=10)
 
-    button9 = ttk.Button(frame2, text="SALDO PROVEEDORES", command=clientecredit_submodule)
+    button9 = ttk.Button(frame2, text="SALDO PROVEEDORES", command=suppliercredit_submodule)
     button9.pack(pady=10)
 
-    button10 = ttk.Button(frame2, text="SALDO CLIENTES")
+    button10 = ttk.Button(frame2, text="SALDO CLIENTES",command=clientecredit_submodule)
     button10.pack(pady=10)
 
-    button11 = ttk.Button(frame2, text="VENTAS POR COBRAR")
-    button11.pack(pady=10)
+    #button11 = ttk.Button(frame2, text="VENTAS POR COBRAR")
+    #button11.pack(pady=10)
 
-    button12 = ttk.Button(frame2, text="RESULTADOS GENERALES")
+    button12 = ttk.Button(frame2, text="RESULTADOS GENERALES", command= reportegral_submodule)
     button12.pack(pady=10)
 
-    button13 = ttk.Button(frame3, text="REPORTE DE CLIENTES")
+    button13 = ttk.Button(frame3, text="REPORTE DE CLIENTES", command= reportclientes_submodule)
     button13.pack(pady=10)
 
-    button14 = ttk.Button(frame3, text="REPORTE DE GASTOS")
+    button14 = ttk.Button(frame3, text="REPORTE DE GASTOS", command=reportgastos_submodule)
     button14.pack(pady=10)
 
-    button15 = ttk.Button(frame3, text="REPORTE DE VENTAS")
+    button15 = ttk.Button(frame3, text="REPORTE DE VENTAS", command=reporteventa_submodule)
     button15.pack(pady=10)
 
-    button17 = ttk.Button(frame3, text="REPORTE DE PRODUCTOS")
+    button17 = ttk.Button(frame3, text="REPORTE DE PRODUCTOS", command= reportprod_submodule)
     button17.pack(pady=10)
 
-    button18 = ttk.Button(frame3, text="REPORTE DE PROVEEDORES")
+    button18 = ttk.Button(frame3, text="REPORTE DE PROVEEDORES", command= reportsup_submodule)
 
     button18.pack(pady=10)
 
-    button19 = ttk.Button(frame3, text="REPORTE DE INVENTARIO")
+    button19 = ttk.Button(frame3, text="REPORTE DE INVENTARIO", command= reportinventario_submodule)
     button19.pack(pady=10)
 
     #button20 = ttk.Button(frame3, text="CALENDARIO DE PAGOS")
@@ -191,7 +192,7 @@ def switchwindow(ovalue):
 def switchwindowroot(oovalue):
     oovalue.destroy()
     root()
-#------------------------------------------------------------ MAIN WINDOW ---------------------------------------------------------------------------
+
 def mainwindow():
     # Initialize main window
     mainwindow = tk.Toplevel()
@@ -253,8 +254,8 @@ def mainwindow():
 
     # Start the main loop
     mainwindow.mainloop()
-#------------------------------------------------------- SUB MODULES -----------------------------------------------------------------------------
-def sell_submodule():
+
+def sell_submodule():  
     global entries
     # Initialize main window
     sellwindow = tk.Toplevel()
@@ -280,14 +281,14 @@ def sell_submodule():
     input_frame = tk.Frame(sellwindow, bg='#C0C0C0')  # Set background color to C0C0C0
     canvas.create_window(40, 20, anchor="nw", window=input_frame)
 
-
     # Define a list of fields (labels for textboxes)
-    fields = ['Concepto', 'Fecha Venta', 'Vencimiento', 'Status', 'Venta Abono', 'Cliente', 'Nombre', 
-              'Exist Actual', 'Costo Invert', 'Cantidad', 'Pagado', 'Precio Unit', 'Cuenta', 'FormaPago', 
-              'Area', 'FolioFactura', 'TasaFactura', 'Emision', 'PrecioFinal', 'Unidades', 'Descuento', 
-              'Ingreso', 'CostoProd', 'TipoEntrega', 'CostEnvio', 'FechEnvio', 'LugEntrega', 'FechEntrega', 
-              'Comentarios', 'Codigo', 'Verif', 'StatusPago', 'MontoPdte', 'Ganancia', 'Margen', 
-              'Facturacion', 'Impuestos', 'NoVenta', 'MesFact', 'YrFact', 'Mes', 'Year', 'Registro']
+    fields = [
+        'Cliente', 'RFC', 'Fecha de entrega', 'Cantidad', 'Descripcion',
+        'Precio Neto', 'Total', 'Restante de producto', 'Fecha de facturacion',
+        'Folio de factura', 'Complementos de pago', 'Abonos', 'Fecha',
+        'Metodo de pago', 'Complemento de abono', 'Folio de complemento',
+        'Confirmacion de pago en banco de Mexico'
+    ]
 
     # Dictionary to hold references to the Entry widgets
     entries = {}
@@ -303,7 +304,7 @@ def sell_submodule():
 
         entries[field] = entry
 
-    submit_button = tk.Button(input_frame, text="Submit", font="Oswald",command=lambda:switchto("sell"))
+    submit_button = tk.Button(input_frame, text="Submit", font="Oswald", command=lambda: switchto("sell"))
 
     # Calculate the appropriate row for the button (place it after all entries)
     button_row = (len(fields) // 4) + 1
@@ -834,197 +835,561 @@ def suppliercredit_submodule():
     supplierwindow.mainloop() 
 
 def clientecredit_submodule():
-    # Define Excel properties
+   # Load the data from the Excel file
     masterxlsx = 'inv_maestro.xlsx'
-    venta_sheet = 'VENTA'
+    sheet_name_venta = 'VENTA'
 
-    # Load the "VENTA" sheet
-    try:
-        df_venta = pd.read_excel(masterxlsx, sheet_name=venta_sheet)
-    except FileNotFoundError:
-        print(f"File {masterxlsx} not found.")
-        return
-    except ValueError:
-        print(f"Sheet {venta_sheet} not found in the Excel file.")
-        return
+    df_venta = pd.read_excel(masterxlsx, sheet_name=sheet_name_venta)
 
-    # Ensure 'Cantidad' column is numeric, convert non-numeric values to NaN, and fill NaNs with 0
-    df_venta['Cantidad'] = pd.to_numeric(df_venta['Cantidad'], errors='coerce').fillna(0)
+    # Create a Toplevel window
+    window = tk.Toplevel()
+    window.title("Cliente Deudor Reporte")
+    window.geometry("1000x600")
 
-    # Aggregate the "Cantidad" for each "Cliente"
-    acumulado_df = df_venta.groupby('Cliente', as_index=False).agg({'Cantidad': 'sum'})
-    acumulado_df.rename(columns={'Cantidad': 'Acumulado'}, inplace=True)
-
-    # Calculate "Ingresado" based on "Pagado" status
-    def calculate_ingresado(row):
-        client_data = df_venta[(df_venta['Cliente'] == row['Cliente']) & (df_venta['Pagado'] == 'no pagado')]
-        rest_value = client_data['Cantidad'].sum()
-        return row['Acumulado'] - rest_value
-
-    acumulado_df['Ingresado'] = acumulado_df.apply(calculate_ingresado, axis=1)
-
-    # Calculate "Importe a Pagar" as the difference between "Acumulado" and "Ingresado"
-    acumulado_df['Importe a Pagar'] = acumulado_df['Acumulado'] - acumulado_df['Ingresado']
-
-    # Create the Tkinter window
-    clientwindow = tk.Toplevel()
-    clientwindow.title("TRUCK SHOPS MAIN - Credit Info")
-    clientwindow.geometry("1000x600")
-
-    # Load and set background image
+    # Load background image (optional)
     image_path = "bg1.jpg"
     background = Image.open(image_path)
     background = background.resize((1500, 700), Image.LANCZOS)
     bgimg = ImageTk.PhotoImage(background)
 
-    canvas = tk.Canvas(clientwindow, highlightthickness=0)
+    canvas = tk.Canvas(window, highlightthickness=0)
     canvas.pack(fill="both", expand=True)
     canvas.create_image(0, 0, image=bgimg, anchor="nw")
 
-    # Create a frame for the table
-    table_frame = tk.Frame(canvas)
-    table_frame.place(x=50, y=50, width=900, height=500)
+    # Table frame
+    frame = tk.Frame(canvas)
+    frame.place(x=50, y=50, width=900, height=500)
 
-    # Define the columns for the Treeview
-    columns = ("Cliente", "Acumulado", "Ingresado", "Importe a Pagar")
-    tree = ttk.Treeview(table_frame, columns=columns, show="headings")
+    # Define columns for the Treeview table, adding "Folio de la Venta"
+    columns = ("Cliente", "Saldo Pendiente", "Mes", "Folio")
+    tree = ttk.Treeview(frame, columns=columns, show="headings")
 
-    # Set up column headers and width
+    # Configure headings and column widths
     for col in columns:
         tree.heading(col, text=col)
-        tree.column(col, width=100)
+        tree.column(col, width=200)
 
-    # Define tag styles for coloring rows based on "Importe a Pagar"
-    tree.tag_configure('low', background='green')
-    tree.tag_configure('medium', background='yellow')
-    tree.tag_configure('high', background='red')
+    # Calculate outstanding balance and populate the table with color-coding based on delay
+    current_month = datetime.now().month
+    current_year = datetime.now().year
 
-    # Insert data into the Treeview with color coding based on "Importe a Pagar"
-    for _, row in acumulado_df.iterrows():
-        importe_a_pagar = row["Importe a Pagar"]
+    for _, row in df_venta.iterrows():
+        # Extract data for each row
+        cliente = row['Cliente']
+        precio_final = row['Precio Final']
+        pagado = row['Pagado']
+        mes = row['Mes']
+        year = row.get('Año', current_year)  # Assuming there's an 'Año' column; replace if different
+        folio = row['No. Venta']  # Adjust the column name if necessary
 
-        # Determine the tag based on the value of "Importe a Pagar"
-        if importe_a_pagar < 1000:
-            tag = 'low'
-        elif 1000 <= importe_a_pagar < 5000:
-            tag = 'medium'
+        saldo_pendiente = precio_final - pagado
+
+        # Determine if the transaction is older than three months
+        months_difference = (current_year - year) * 12 + (current_month - mes)
+        if months_difference > 3:
+            tag = "red"
         else:
-            tag = 'high'
+            tag = "green"
 
-        tree.insert("", "end", values=(row["Cliente"], row["Acumulado"], row["Ingresado"], importe_a_pagar), tags=(tag,))
+        # Insert data into the treeview
+        item_id = tree.insert("", "end", values=(cliente, saldo_pendiente, mes, folio))
 
-    # Attach the Treeview to the window
+        # Apply color coding
+        tree.tag_configure("green", background="lightgreen")
+        tree.tag_configure("red", background="lightcoral")
+        tree.item(item_id, tags=(tag,))
+
+    # Pack the treeview
     tree.pack(fill="both", expand=True)
 
-    # Start the Tkinter event loop
-    clientwindow.mainloop()
+def reportegral_submodule():
+    # Load data from the Excel file
+    masterxlsx = 'inv_maestro.xlsx'
+    venta_sheet = 'VENTA'
+    incout_sheet = 'INCOUT'
+    main_sheet = 'MAIN'
+
+    df_venta = pd.read_excel(masterxlsx, sheet_name=venta_sheet)
+    df_incout = pd.read_excel(masterxlsx, sheet_name=incout_sheet)
+    df_main = pd.read_excel(masterxlsx, sheet_name=main_sheet)
+
+    # Get unique values from the 'AREAS' column in the 'MAIN' sheet for the drop-down
+    areas = df_main['AREAS'].dropna().unique().tolist()  # Ensuring no NaN values are included
+
+    # Create a Toplevel window
+    window = tk.Toplevel()
+    window.title("Reporte de Ventas e Inversiones")
+    window.geometry("1200x800")
+
+    # Load background image (optional)
+    image_path = "bg1.jpg"
+    background = Image.open(image_path)
+    background = background.resize((1500, 900), Image.LANCZOS)
+    bgimg = ImageTk.PhotoImage(background)
+
+    canvas = tk.Canvas(window, highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+    canvas.create_image(0, 0, image=bgimg, anchor="nw")
+
+    # Create frame for tables and dropdown
+    control_frame = tk.Frame(canvas)
+    control_frame.place(x=50, y=50, width=1100, height=100)
+
+    # Dropdown menu for filtering by area
+    selected_area = tk.StringVar()
+    selected_area.set("Seleccione un Área")
+
+    def filter_data():
+        area = selected_area.get()
+        update_tables(area)
+
+    area_dropdown = ttk.OptionMenu(control_frame, selected_area, *areas, command=lambda _: filter_data())
+    area_dropdown.pack(pady=10)
+
+    # Frames for tables
+    ventas_frame = tk.Frame(canvas)
+    ventas_frame.place(x=50, y=200, width=500, height=500)
+
+    inversiones_frame = tk.Frame(canvas)
+    inversiones_frame.place(x=600, y=200, width=500, height=500)
+
+    # Create Treeviews
+    ventas_columns = ("Mes", "Area", "Total Pagado")
+    ventas_tree = ttk.Treeview(ventas_frame, columns=ventas_columns, show="headings")
+    for col in ventas_columns:
+        ventas_tree.heading(col, text=col)
+        ventas_tree.column(col, width=150)
+    ventas_tree.pack(fill="both", expand=True)
+
+    inversiones_columns = ("Mes", "Area", "Total Pagado")
+    inversiones_tree = ttk.Treeview(inversiones_frame, columns=inversiones_columns, show="headings")
+    for col in inversiones_columns:
+        inversiones_tree.heading(col, text=col)
+        inversiones_tree.column(col, width=150)
+    inversiones_tree.pack(fill="both", expand=True)
+
+    def update_tables(area_filter=None):
+        # Clear existing data
+        for item in ventas_tree.get_children():
+            ventas_tree.delete(item)
+        for item in inversiones_tree.get_children():
+            inversiones_tree.delete(item)
+
+        # Filter data
+        if area_filter:
+            df_venta_filtered = df_venta[df_venta['Area'] == area_filter]
+            df_incout_filtered = df_incout[df_incout['Area'] == area_filter]
+        else:
+            df_venta_filtered = df_venta
+            df_incout_filtered = df_incout
+
+        # Group and sum data for sales
+        ventas_summary = df_venta_filtered.groupby(['Mes', 'Area'])['Pagado'].sum().reset_index()
+        for _, row in ventas_summary.iterrows():
+            ventas_tree.insert("", "end", values=(row['Mes'], row['Area'], row['Pagado']))
+
+        # Group and sum data for investments
+        inversiones_summary = df_incout_filtered.groupby(['Mes', 'Area'])['Pagado'].sum().reset_index()
+        for _, row in inversiones_summary.iterrows():
+            inversiones_tree.insert("", "end", values=(row['Mes'], row['Area'], row['Pagado']))
+
+    # Initial table population
+    update_tables()
+
+def reportclientes_submodule():
+    # Load data from the Excel file
+    masterxlsx = 'inv_maestro.xlsx'
+    venta_sheet = 'VENTA'
+
+    df_venta = pd.read_excel(masterxlsx, sheet_name=venta_sheet)
+
+    # Create a Toplevel window
+    window = tk.Toplevel()
+    window.title("Análisis de Clientes")
+    window.geometry("1200x800")
+
+    # Load background image (optional)
+    image_path = "bg1.jpg"
+    background = Image.open(image_path)
+    background = background.resize((1200, 800), Image.LANCZOS)
+    bgimg = ImageTk.PhotoImage(background)
+
+    canvas = tk.Canvas(window, highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+    canvas.create_image(0, 0, image=bgimg, anchor="nw")
+
+    # Frame for client analysis summary
+    summary_frame = tk.Frame(canvas)
+    summary_frame.place(x=50, y=50, width=1100, height=150)
+
+    # Client dropdown menu
+    clientes = df_venta['Cliente'].unique().tolist()
+    selected_cliente = tk.StringVar()
+    selected_cliente.set("Seleccione un Cliente")
+
+    def update_client_analysis(cliente_filter):
+        # Clear existing data
+        concepto_listbox.delete(0, tk.END)
+        for item in compras_tree.get_children():
+            compras_tree.delete(item)
+
+        # Filter data for the selected client
+        df_cliente = df_venta[df_venta['Cliente'] == cliente_filter]
+
+        # Calculate saldo (balance)
+        total_precio_final = df_cliente['Precio Final'].sum()
+        total_pagado = df_cliente['Pagado'].sum()
+        saldo_cliente = total_precio_final - total_pagado
+
+        # Display saldo information
+        saldo_label.config(text=f"Saldo Pendiente: {saldo_cliente:.2f}")
+
+        # Populate concepto list
+        conceptos = df_cliente['Concepto'].unique().tolist()
+        for concepto in conceptos:
+            concepto_listbox.insert(tk.END, concepto)
+
+        # Group and sum data for purchases per month
+        compras_summary = df_cliente.groupby(['Mes'])['Precio Final'].sum().reset_index()
+        for _, row in compras_summary.iterrows():
+            compras_tree.insert("", "end", values=(row['Mes'], row['Precio Final']))
+
+    # Dropdown menu for selecting clients
+    cliente_dropdown = ttk.OptionMenu(summary_frame, selected_cliente, *clientes, command=update_client_analysis)
+    cliente_dropdown.pack(pady=10)
+
+    # Label to display the client's balance
+    saldo_label = tk.Label(summary_frame, text="Saldo Pendiente: 0.00", font=("Arial", 14))
+    saldo_label.pack(pady=10)
+
+    # Frame for concepto list
+    concepto_frame = tk.Frame(canvas)
+    concepto_frame.place(x=50, y=250, width=500, height=500)
+
+    # Concepto Listbox
+    concepto_listbox = tk.Listbox(concepto_frame, width=50, height=25)
+    concepto_listbox.pack(side="left", fill="y")
+
+    concepto_scrollbar = tk.Scrollbar(concepto_frame, orient="vertical", command=concepto_listbox.yview)
+    concepto_scrollbar.pack(side="right", fill="y")
+    concepto_listbox.config(yscrollcommand=concepto_scrollbar.set)
+
+    # Frame for compras per month table
+    compras_frame = tk.Frame(canvas)
+    compras_frame.place(x=600, y=250, width=500, height=500)
+
+    # Create Treeview for compras per month
+    compras_columns = ("Mes", "Total Precio Final")
+    compras_tree = ttk.Treeview(compras_frame, columns=compras_columns, show="headings")
+    for col in compras_columns:
+        compras_tree.heading(col, text=col)
+        compras_tree.column(col, width=150)
+    compras_tree.pack(fill="both", expand=True)
+
+def reportgastos_submodule():
+    masterxlsx = 'inv_maestro.xlsx'
+    incout_sheet = 'INCOUT'
+
+    df_incout = pd.read_excel(masterxlsx, sheet_name=incout_sheet)
+
+    # Filter data for rows where "Tipo" is "Egreso"
+    df_egresos = df_incout[df_incout['Tipo'] == 'Egreso']
+
+    # Create a Toplevel window
+    window = tk.Toplevel()
+    window.title("Reporte de Gastos")
+    window.geometry("1200x800")
+
+    # Load background image (optional)
+    image_path = "bg1.jpg"
+    background = Image.open(image_path)
+    background = background.resize((1200, 800), Image.LANCZOS)
+    bgimg = ImageTk.PhotoImage(background)
+
+    canvas = tk.Canvas(window, highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+    canvas.create_image(0, 0, image=bgimg, anchor="nw")
+
+    # Frame for the table
+    table_frame = tk.Frame(canvas)
+    table_frame.place(x=50, y=50, width=1100, height=700)
+
+    # Define columns for the Treeview table
+    columns = ("Status", "Concepto", "Proveedor", "Costo unitario", "Area", "Nombre",
+               "Cantidad", "Forma de pago", "Folio de factura", "Tasa de factura",
+               "Costo Final", "Año", "Mes")
+    gastos_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
+
+    # Configure headings and column widths
+    for col in columns:
+        gastos_tree.heading(col, text=col)
+        gastos_tree.column(col, width=150)
+
+    # Insert data into the table
+    for _, row in df_egresos.iterrows():
+        values = (row['Status'], row['Concepto'], row['Proveedor'], row['Costo unitario'], row['Area'],
+                  row['Nombre'], row['Cantidad'], row['Forma de pago'], row['Folio de factura'],
+                  row['Tasa de factura'], row['Costo Final'], row['Año'], row['Mes'])
+        gastos_tree.insert("", "end", values=values)
+
+    # Pack the Treeview
+    gastos_tree.pack(fill="both", expand=True)
+
+    # Example usage (when integrating with a larger application):
+    # reporte_gastos()
+
+def reporteventa_submodule():
+    # Load data from the Excel file
+    masterxlsx = 'inv_maestro.xlsx'
+    venta_sheet = 'VENTA'
+
+    df_venta = pd.read_excel(masterxlsx, sheet_name=venta_sheet)
+
+    # Create a Toplevel window
+    window = tk.Toplevel()
+    window.title("Reporte de Ventas")
+    window.geometry("1200x800")
+
+    # Load background image (optional)
+    image_path = "bg1.jpg"
+    background = Image.open(image_path)
+    background = background.resize((1200, 800), Image.LANCZOS)
+    bgimg = ImageTk.PhotoImage(background)
+
+    canvas = tk.Canvas(window, highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+    canvas.create_image(0, 0, image=bgimg, anchor="nw")
+
+    # Frame for the table
+    table_frame = tk.Frame(canvas)
+    table_frame.place(x=50, y=50, width=1100, height=700)
+
+    # Define columns for the Treeview table
+    columns = ("Status", "Concepto", "Proveedor", "Costo unitario", "Area", "Nombre",
+               "Cantidad", "Forma de pago", "Folio de factura", "Tasa de factura",
+               "Costo Final", "Año", "Mes")
+    ventas_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
+
+    # Configure headings and column widths
+    for col in columns:
+        ventas_tree.heading(col, text=col)
+        ventas_tree.column(col, width=150)
+
+    # Insert data into the table
+    for _, row in df_venta.iterrows():
+        values = (row['Status'], row['Concepto'], row['Proveedor'], row['Costo unitario'], row['Area'],
+                  row['Nombre'], row['Cantidad'], row['Forma de pago'], row['Folio de factura'],
+                  row['Tasa de factura'], row['Costo Final'], row['Año'], row['Mes'])
+        ventas_tree.insert("", "end", values=values)
+
+    # Pack the Treeview
+    ventas_tree.pack(fill="both", expand=True)
+
+def reportprod_submodule():
+    # Load data from the Excel file
+    masterxlsx = 'inv_maestro.xlsx'
+    prodserv_sheet = 'PRODSERV'
+
+    df_prodserv = pd.read_excel(masterxlsx, sheet_name=prodserv_sheet)
+
+    # Create a Toplevel window
+    window = tk.Toplevel()
+    window.title("Reporte de Productos y Servicios")
+    window.geometry("1200x800")
+
+    # Load background image (optional)
+    image_path = "bg1.jpg"
+    background = Image.open(image_path)
+    background = background.resize((1200, 800), Image.LANCZOS)
+    bgimg = ImageTk.PhotoImage(background)
+
+    canvas = tk.Canvas(window, highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+    canvas.create_image(0, 0, image=bgimg, anchor="nw")
+
+    # Frame for the table
+    table_frame = tk.Frame(canvas)
+    table_frame.place(x=50, y=50, width=1100, height=650)
+
+    # Define columns based on DataFrame columns
+    columns = list(df_prodserv.columns)
+    prodserv_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
+
+    # Configure headings and column widths
+    for col in columns:
+        prodserv_tree.heading(col, text=col)
+        prodserv_tree.column(col, width=150)
+
+    # Insert data into the table
+    for _, row in df_prodserv.iterrows():
+        values = tuple(row[col] for col in columns)
+        prodserv_tree.insert("", "end", values=values)
+
+    # Pack the Treeview
+    prodserv_tree.pack(fill="both", expand=True)
+
+    # Function to export data to Excel
+    def export_to_excel():
+        # Get the user's desktop path
+        desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+        output_file = os.path.join(desktop_path, "Reporte_Productos.xlsx")
+
+        # Save the DataFrame to an Excel file
+        df_prodserv.to_excel(output_file, index=False)
+        tk.messagebox.showinfo("Exportación completada", f"El archivo ha sido guardado en: {output_file}")
+
+    # Button to export data
+    export_button = tk.Button(window, text="Exportar a Excel", command=export_to_excel)
+    export_button.place(x=950, y=720)
+
+def reportsup_submodule():
+    # Load data from the Excel file
+    masterxlsx = 'inv_maestro.xlsx'
+    supplier_sheet = 'SUPPLIER'
+
+    df_supplier = pd.read_excel(masterxlsx, sheet_name=supplier_sheet)
+
+    # Create a Toplevel window
+    window = tk.Toplevel()
+    window.title("Reporte de Proveedores")
+    window.geometry("1200x800")
+
+    # Load background image (optional)
+    image_path = "bg1.jpg"
+    background = Image.open(image_path)
+    background = background.resize((1200, 800), Image.LANCZOS)
+    bgimg = ImageTk.PhotoImage(background)
+
+    canvas = tk.Canvas(window, highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+    canvas.create_image(0, 0, image=bgimg, anchor="nw")
+
+    # Frame for the table
+    table_frame = tk.Frame(canvas)
+    table_frame.place(x=50, y=50, width=1100, height=650)
+
+    # Define columns based on DataFrame columns
+    columns = list(df_supplier.columns)
+    supplier_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
+
+    # Configure headings and column widths
+    for col in columns:
+        supplier_tree.heading(col, text=col)
+        supplier_tree.column(col, width=150)
+
+    # Insert data into the table
+    for _, row in df_supplier.iterrows():
+        values = tuple(row[col] for col in columns)
+        supplier_tree.insert("", "end", values=values)
+
+    # Pack the Treeview
+    supplier_tree.pack(fill="both", expand=True)
+
+    # Function to export data to Excel
+    def export_to_excel():
+        # Get the user's desktop path
+        desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+        output_file = os.path.join(desktop_path, "Reporte_Proveedores.xlsx")
+
+        # Save the DataFrame to an Excel file
+        df_supplier.to_excel(output_file, index=False)
+        messagebox.showinfo("Exportación completada", f"El archivo ha sido guardado en: {output_file}")
+
+    # Button to export data
+    export_button = tk.Button(window, text="Exportar a Excel", command=export_to_excel)
+    export_button.place(x=950, y=720)
+
+def reportinventario_submodule():
+    # Load data from the Excel file
+    masterxlsx = 'inv_maestro.xlsx'
+    inventario_sheet = 'INVENTARIO'
+
+    df_inventario = pd.read_excel(masterxlsx, sheet_name=inventario_sheet)
+
+    # Group data by "Codigo" and "Proveedor" and count the elements
+    grouped_df = df_inventario.groupby(['Codigo', 'Proveedor']).size().reset_index(name='Cantidad')
+
+    # Create a Toplevel window
+    window = tk.Toplevel()
+    window.title("Reporte de Inventario")
+    window.geometry("1200x800")
+
+    # Load background image (optional)
+    image_path = "bg1.jpg"
+    background = Image.open(image_path)
+    background = background.resize((1200, 800), Image.LANCZOS)
+    bgimg = ImageTk.PhotoImage(background)
+
+    canvas = tk.Canvas(window, highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+    canvas.create_image(0, 0, image=bgimg, anchor="nw")
+
+    # Frame for the table
+    table_frame = tk.Frame(canvas)
+    table_frame.place(x=50, y=50, width=1100, height=650)
+
+    # Define columns for the Treeview table
+    columns = ["Codigo", "Proveedor", "Cantidad"]
+    inventario_tree = ttk.Treeview(table_frame, columns=columns, show="headings")
+
+    # Configure headings and column widths
+    for col in columns:
+        inventario_tree.heading(col, text=col)
+        inventario_tree.column(col, width=200)
+
+    # Insert data into the table
+    for _, row in grouped_df.iterrows():
+        values = (row['Codigo'], row['Proveedor'], row['Cantidad'])
+        inventario_tree.insert("", "end", values=values)
+
+    # Pack the Treeview
+    inventario_tree.pack(fill="both", expand=True)
+
+    # Function to export data to Excel
+    def export_to_excel():
+        # Get the user's desktop path
+        desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+        output_file = os.path.join(desktop_path, "Reporte_Inventario.xlsx")
+
+        # Save the grouped DataFrame to an Excel file
+        grouped_df.to_excel(output_file, index=False)
+        messagebox.showinfo("Exportación completada", f"El archivo ha sido guardado en: {output_file}")
+
+    # Button to export data
+    export_button = tk.Button(window, text="Exportar a Excel", command=export_to_excel)
+    export_button.place(x=950, y=720)
 
 def sell_register():
     # DEFINE XLSX PROPERTIES
     masterxlsx = 'inv_maestro.xlsx'
     productreg = 'VENTA'
 
-    # Cargar el libro existente y la hoja especificada en un DataFrame
+    # Load existing data
     try:
-        # Load existing data
         existing_df = pd.read_excel(masterxlsx, sheet_name=productreg)
     except FileNotFoundError:
         # If the file doesn't exist, create an empty DataFrame
         existing_df = pd.DataFrame()
 
-    # Obtener valores de las entradas (replace this with actual input handling)
-    Con = entries['Concepto'].get()
-    Selldate = entries['Fecha Venta'].get()
-    expiration = entries['Vencimiento'].get()
-    stat = entries['Status'].get()
-    abonsell = entries['Venta Abono'].get()
-    client = entries['Cliente'].get()
-    name = entries['Nombre'].get()
-    actualexist = entries['Exist Actual'].get()
-    invcost = entries['Costo Invert'].get()
-    qty = entries['Cantidad'].get()
-    payed = entries['Pagado'].get()
-    unitprice = entries['Precio Unit'].get()
-    account = entries['Cuenta'].get()
-    paymethod = entries['FormaPago'].get()
-    oarea = entries['Area'].get()
-    id = entries['FolioFactura'].get()
-    billrate = entries['TasaFactura'].get()
-    oEmision = entries['TasaFactura'].get()
-
-    # Variables de prueba
-    finalprice = "Test"  # Preciofinal
-    unities = "Test"  # Unidades
-    disc = "Test"  # Descuento
-    income = "Test"  # Ingreso
-    prodcost = "Test"  # CostoProd
-    delivertype = "Test"  # TipoEntrega
-    sendcost = "Test"  # CostEnvio
-    senddate = "Test"  # FechEnvio
-    deliverplace = "Test"  # LugEntrega
-    deliverdate = "Test"  # FechEntrega
-    comments = "Test"  # Comentarios
-    code = "Test"  # Codigo
-    Verification = "Test"  # Verif
-    paystatus = "Test"  # StatusPago
-    pendingmount = "Test"  # MontoPdte
-    earnings = "Test"  # Ganancia
-    margin = "Test"  # Margen
-    billing = "Test"  # Facturacion
-    tax = "Test"  # Impuestos
-    sellno = "Test"  # NoVenta
-    billmonth = "Test"  # MesFact
-    billyear = "Test"  # YrFact
-    month = "Test"  # Mes
-    Yr = "Test"  # Year
-    register = "Test"  # Registro
-
-    # -------------------------------------------------------- DEFINE VALUES ------------------------------------------------------------------------
-
+    # Obtener valores de las entradas
     new_product = {
-        'Concepto': Con,
-        'Fecha Venta': Selldate,
-        'Vencimiento': expiration,
-        'Status': stat,
-        'Venta Abono': abonsell,
-        'Cliente': client,
-        'Nombre': name,
-        'Exist Actual': actualexist,
-        'Costo Invert': invcost,
-        'Cantidad': qty,
-        'Pagado': payed,
-        'Precio Unit': unitprice,
-        'Cuenta': account,
-        'Forma Pago': paymethod,
-        'Area': oarea,
-        'Folio Factura': id,
-        'Tasa Factura': billrate,
-        'Emision': oEmision,
-        'Precio Final': finalprice,
-        'Unidades': unities,
-        'Descuento': disc,
-        'Ingreso': income,
-        'Costo Prod': prodcost,
-        'Tipo Entrega': delivertype,
-        'Cost Envio': sendcost,
-        'Fech Envio': senddate,
-        'Lug Entrega': deliverplace,
-        'Fech Entrega': deliverdate,
-        'Comentarios': comments,
-        'Codigo': code,
-        'Verif': Verification,
-        'Status Pago': paystatus,
-        'Monto Pdte.': pendingmount,
-        'Ganancia': earnings,
-        'Margen': margin,
-        'Facturacion': billing,
-        'Impuestos': tax,
-        'No. Venta': sellno,
-        'Mes Fact': billmonth,
-        'Año Fact': billyear,
-        'Mes': month,
-        'Año': Yr,
-        'Registro': register,
+        'Cliente': entries['Cliente'].get(),
+        'RFC': entries['RFC'].get(),
+        'Fecha de entrega': entries['Fecha de entrega'].get(),
+        'Cantidad': entries['Cantidad'].get(),
+        'Descripcion': entries['Descripcion'].get(),
+        'Precio Neto': entries['Precio Neto'].get(),
+        'Total': entries['Total'].get(),
+        'Restante de producto': entries['Restante de producto'].get(),
+        'Fecha de facturacion': entries['Fecha de facturacion'].get(),
+        'Folio de factura': entries['Folio de factura'].get(),
+        'Complementos de pago': entries['Complementos de pago'].get(),
+        'Abonos': entries['Abonos'].get(),
+        'Fecha': entries['Fecha'].get(),
+        'Metodo de pago': entries['Metodo de pago'].get(),
+        'Complemento de abono': entries['Complemento de abono'].get(),
+        'Folio de complemento': entries['Folio de complemento'].get(),
+        'Confirmacion de pago en banco de Mexico': entries['Confirmacion de pago en banco de Mexico'].get()
     }
 
     # Convertir el diccionario a un DataFrame
@@ -1255,8 +1620,9 @@ def costumer_registration():
         'Telefono': customerentries['Telefono'].get(),
         'Correo': customerentries['Correo'].get(),
         'Empresa': customerentries['Empresa'].get(),
-        'DNI': customerentries['DNI'].get(),
         'Ubicacion': customerentries['Ubicacion'].get(),
+        'RFC': customerentries['RFC'].get(),
+
     }
 
     # Convert the new entry into a DataFrame
@@ -1271,10 +1637,9 @@ def costumer_registration():
     print("Customer registered successfully.")
 
 def inventory_registration():
-        # DEFINE XLSX PROPERTIES
+     # DEFINE XLSX PROPERTIES
     masterxlsx = 'inv_maestro.xlsx'
     productreg = 'INVENTARIO'
-
 
     try:
         # Load existing data
@@ -1285,25 +1650,45 @@ def inventory_registration():
 
     # -------------------------------------------------------- DEFINE VALUES ------------------------------------------------------------------------
     new_employee = {
-        'Nombre': inventoryentries['Nombre'].get(),
-        'Codigo': inventoryentries['Codigo'].get(),
+        'Tipo': inventoryentries['Tipo'].get(),
+        'Cantidad': inventoryentries['Cantidad'].get(),
+        'Concepto': inventoryentries['Concepto'].get(),
         'Proveedor': inventoryentries['Proveedor'].get(),
-        'Entradas': inventoryentries['Entradas'].get(),
-        'Salidas': inventoryentries['Salidas'].get(),
-        'Exist Actual': inventoryentries['Exist Actual'].get(),
-        'Almacen_percent': inventoryentries['Almacen_percent'].get(),
-        'Status':inventoryentries['Status'].get(),
-        'Inversión':inventoryentries['Inversión'].get(),
-        'Ventas' : inventoryentries['Ventas'].get(),
-        'Ganancia': inventoryentries['Ganancia'].get()
+        'Precio Neto': inventoryentries['Precio Neto'].get(),
+        'Precio IVA': inventoryentries['Precio IVA'].get(),
+        'Precio con descuento': inventoryentries['Precio con descuento'].get(),
+        'Precio venta': inventoryentries['Precio venta'].get()
     }
 
-    new_product_df = pd.DataFrame([new_employee])
+    # Check if the entry already exists based on unique criteria (you can adjust criteria as needed)
+    matching_rows = existing_df[
+        (existing_df['Concepto'] == new_employee['Concepto']) & 
+        (existing_df['Proveedor'] == new_employee['Proveedor'])
+    ]
 
-    df = pd.concat([existing_df, new_product_df], ignore_index=True)
+    if not matching_rows.empty:
+        # If a matching row is found, prompt the user with a warning
+        user_response = messagebox.askyesno("Advertencia", "El elemento ya existe. ¿Desea modificarlo?")
+        if user_response:
+            # Update existing row(s)
+            for idx in matching_rows.index:
+                existing_df.at[idx, 'Tipo'] = new_employee['Tipo']
+                existing_df.at[idx, 'Cantidad'] = new_employee['Cantidad']
+                existing_df.at[idx, 'Precio Neto'] = new_employee['Precio Neto']
+                existing_df.at[idx, 'Precio IVA'] = new_employee['Precio IVA']
+                existing_df.at[idx, 'Precio con descuento'] = new_employee['Precio con descuento']
+                existing_df.at[idx, 'Precio venta'] = new_employee['Precio venta']
+        else:
+            # If user does not want to modify, return without adding a new row
+            return
+    else:
+        # If no matching rows, add the new product
+        new_product_df = pd.DataFrame([new_employee])
+        existing_df = pd.concat([existing_df, new_product_df], ignore_index=True)
 
+    # Save the updated DataFrame to the Excel file
     with pd.ExcelWriter(masterxlsx, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
-        df.to_excel(writer, sheet_name=productreg, index=False)
+        existing_df.to_excel(writer, sheet_name=productreg, index=False)
 
 def switchto(window):
     if window == "sell":
